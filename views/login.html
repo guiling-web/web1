@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工业平台 - 登录</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== 登录页面专属样式 ===== */
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --primary-light: #4895ef;
+            --success: #4cc9f0;
+            --error: #f94144;
+            --dark: #2b2d42;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-primary: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--dark);
+        }
+
+        /* ===== 头部导航 ===== */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand h1 {
+            background: linear-gradient(135deg, var(--white), #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* ===== 主内容区域 ===== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        /* ===== 登录卡片 ===== */
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 2.5rem;
+            font-size: 1rem;
+        }
+
+        /* ===== 表单样式 ===== */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+
+        .form-input:focus + .input-icon {
+            color: var(--primary);
+        }
+
+        /* ===== 错误状态 ===== */
+        .global-error {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(244, 67, 54, 0.2);
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .global-error.show {
+            display: block;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .form-group.error .form-input {
+            border-color: var(--error);
+            background: rgba(244, 67, 54, 0.05);
+        }
+
+        .form-group.error .input-icon {
+            color: var(--error);
+        }
+
+        .form-group.success .form-input {
+            border-color: var(--success);
+            background: rgba(76, 201, 240, 0.05);
+        }
+
+        /* ===== 按钮样式 ===== */
+        .btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== 注册链接 ===== */
+        .auth-link {
+            text-align: center;
+            margin-top: 2rem;
+            color: #6c757d;
+        }
+
+        .auth-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .auth-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .auth-link a:hover::after {
+            width: 100%;
+        }
+
+        .auth-link a:hover {
+            color: var(--primary-dark);
+        }
+
+        /* ===== 页脚 ===== */
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .auth-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .navbar {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 1.5rem;
+            }
+
+            .auth-card h2 {
+                font-size: 1.5rem;
+            }
+
+            .form-input {
+                padding: 0.875rem 0.875rem 0.875rem 2.5rem;
+            }
+
+            .input-icon {
+                left: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>工业平台</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">登录</a>
+                <a href="/register">注册</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>用户登录</h2>
+                <p class="auth-subtitle">欢迎回来，请登录您的账户</p>
+                
+                <!-- 全局错误提示 -->
+                <div id="globalError" class="global-error">
+                    <!-- 错误信息将在这里显示 -->
+                </div>
+                
+                <form id="loginForm" class="auth-form">
+                    <!-- CSRF Token 隐藏字段 -->
+                    <input type="hidden" id="csrfToken" name="_csrf">
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">邮箱地址</label>
+                        <div class="input-group">
+                            <input type="email" id="email" name="email" class="form-input" required 
+                                   placeholder="请输入您的邮箱地址">
+                            <span class="input-icon">📧</span>
+                        </div>
+                        <div class="error-message" id="emailError">
+                            请输入有效的邮箱地址
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">密码</label>
+                        <div class="input-group">
+                            <input type="password" id="password" name="password" class="form-input" required 
+                                   placeholder="请输入您的密码" minlength="6">
+                            <span class="input-icon">🔒</span>
+                        </div>
+                        <div class="error-message" id="passwordError">
+                            密码不能为空且至少6位字符
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        登录
+                    </button>
+                </form>
+                
+                <p class="auth-link">
+                    还没有账户？ <a href="/register">立即注册</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 工业平台. 保留所有权利.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+    // 保持原有的 JavaScript 功能不变
+    let csrfToken = '';
+
+    async function getCsrfToken() {
+        try {
+            const response = await fetch('/api/csrf-token');
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                csrfToken = data.data.csrfToken;
+                document.getElementById('csrfToken').value = csrfToken;
+                console.log('CSRF Token 获取成功');
+                return true;
+            } else {
+                console.error('获取 CSRF Token 失败:', data.message);
+                return false;
+            }
+        } catch (error) {
+            console.error('获取 CSRF Token 错误:', error);
+            return false;
+        }
+    }
+
+    function validateForm() {
+        let isValid = true;
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        
+        document.querySelectorAll('.form-group').forEach(group => {
+            group.classList.remove('error', 'success');
+        });
+        document.getElementById('globalError').classList.remove('show');
+        
+        if (!email.value.trim()) {
+            email.parentElement.parentElement.classList.add('error');
+            emailError.textContent = '邮箱地址不能为空';
+            isValid = false;
+        } else if (!isValidEmail(email.value)) {
+            email.parentElement.parentElement.classList.add('error');
+            emailError.textContent = '请输入有效的邮箱地址';
+            isValid = false;
+        } else {
+            email.parentElement.parentElement.classList.add('success');
+        }
+        
+        if (!password.value.trim()) {
+            password.parentElement.parentElement.classList.add('error');
+            passwordError.textContent = '密码不能为空';
+            isValid = false;
+        } else if (password.value.length < 6) {
+            password.parentElement.parentElement.classList.add('error');
+            passwordError.textContent = '密码至少需要6位字符';
+            isValid = false;
+        } else {
+            password.parentElement.parentElement.classList.add('success');
+        }
+        
+        return isValid;
+    }
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    function showError(message) {
+        const errorElement = document.getElementById('globalError');
+        errorElement.textContent = message;
+        errorElement.classList.add('show');
+        
+        setTimeout(() => {
+            errorElement.classList.remove('show');
+        }, 5000);
+    }
+    
+    function setButtonLoading(loading) {
+        const submitBtn = document.getElementById('submitBtn');
+        if (loading) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.setAttribute('data-original-text', submitBtn.textContent);
+            submitBtn.textContent = '登录中...';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.textContent = submitBtn.getAttribute('data-original-text') || '登录';
+        }
+    }
+    
+    function showSuccess(message) {
+        console.log('Success:', message);
+    }
+    
+    // 页面加载时获取 CSRF Token
+    document.addEventListener('DOMContentLoaded', function() {
+        getCsrfToken().then(success => {
+            if (!success) {
+                showError('安全令牌获取失败，请刷新页面重试');
+            }
+        });
+
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        
+        emailInput.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                if (isValidEmail(this.value)) {
+                    this.parentElement.parentElement.classList.add('success');
+                    this.parentElement.parentElement.classList.remove('error');
+                } else {
+                    this.parentElement.parentElement.classList.add('error');
+                    this.parentElement.parentElement.classList.remove('success');
+                }
+            }
+        });
+        
+        passwordInput.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                if (this.value.length >= 6) {
+                    this.parentElement.parentElement.classList.add('success');
+                    this.parentElement.parentElement.classList.remove('error');
+                } else {
+                    this.parentElement.parentElement.classList.add('error');
+                    this.parentElement.parentElement.classList.remove('success');
+                }
+            }
+        });
+        
+        emailInput.addEventListener('input', function() {
+            if (this.parentElement.parentElement.classList.contains('error')) {
+                this.parentElement.parentElement.classList.remove('error');
+            }
+        });
+        
+        passwordInput.addEventListener('input', function() {
+            if (this.parentElement.parentElement.classList.contains('error')) {
+                this.parentElement.parentElement.classList.remove('error');
+            }
+        });
+    });
+    
+    // 表单提交处理
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!csrfToken) {
+            showError('安全令牌失效，请刷新页面重试');
+            return;
+        }
+        
+        if (!validateForm()) {
+            return;
+        }
+        
+        setButtonLoading(true);
+        
+        const formData = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            _csrf: csrfToken
+        };
+
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const token = data.token;
+                const user = data.data?.user;
+                
+                if (token && user) {
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    showSuccess('登录成功！');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    showError('登录响应格式错误，请联系管理员');
+                }
+            } else {
+                showError(data.message || '登录失败，请检查邮箱和密码');
+                
+                if (data.message && data.message.includes('CSRF')) {
+                    await getCsrfToken();
+                }
+            }
+        } catch (error) {
+            console.error('登录错误:', error);
+            showError('网络错误，请检查网络连接后重试');
+        } finally {
+            setButtonLoading(false);
+        }
+    });
+    </script>
+</body>
+</html>

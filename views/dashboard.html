@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工业平台 - 仪表盘</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 保持您原有的样式不变 */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* ... 其他样式保持不变 ... */
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>工业平台</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard">仪表盘</a>
+                <a href="#" id="logout">退出登录</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h2>仪表盘</h2>
+                <div class="user-info">
+                    <span id="userWelcome">欢迎，</span>
+                    <div class="dashboard-nav">
+                        <button class="refresh-btn" id="refreshBtn">
+                            <span class="refresh-icon">🔄</span>
+                            刷新数据
+                        </button>
+                        <a href="/inquiry-management" class="btn btn-secondary">询价管理</a>
+                        <a href="/user-profile" class="btn btn-secondary">个人资料</a>
+                        <button id="logoutBtn" class="btn btn-secondary">退出登录</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- 统计卡片 -->
+                <div class="stats-cards">
+                    <div class="stat-card loading" id="totalProductsCard">
+                        <h3>商品总数</h3>
+                        <p id="totalProducts">-</p>
+                    </div>
+                    <div class="stat-card loading" id="myInquiriesCard">
+                        <h3>我的询价</h3>
+                        <p id="myInquiries">-</p>
+                    </div>
+                    <div class="stat-card loading" id="pendingInquiriesCard">
+                        <h3>待回复询价</h3>
+                        <p id="pendingInquiries">-</p>
+                    </div>
+                </div>
+
+                <!-- 商品列表 -->
+                <div class="products-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>商品列表</h3>
+                        <span class="product-count" id="productCount">加载中...</span>
+                    </div>
+                    
+                    <div id="productsList" class="products-grid">
+                        <!-- 商品加载骨架屏 -->
+                        <div class="product-card loading">
+                            <div class="loading-text">
+                                <div class="loading"></div>
+                                加载商品...
+                            </div>
+                        </div>
+                        <div class="product-card loading">
+                            <div class="loading-text">
+                                <div class="loading"></div>
+                                加载商品...
+                            </div>
+                        </div>
+                        <div class="product-card loading">
+                            <div class="loading-text">
+                                <div class="loading"></div>
+                                加载商品...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 工业平台. 保留所有权利.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+    let currentUser = null;
+    let productsData = null;
+    let inquiriesData = null;
+
+    // 显示加载状态
+    function showLoading() {
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.classList.add('loading');
+        });
+        
+        const productsList = document.getElementById('productsList');
+        productsList.innerHTML = `
+            <div class="product-card loading">
+                <div class="loading-text">
+                    <div class="loading"></div>
+                    加载商品...
+                </div>
+            </div>
+            <div class="product-card loading">
+                <div class="loading-text">
+                    <div class="loading"></div>
+                    加载商品...
+                </div>
+            </div>
+            <div class="product-card loading">
+                <div class="loading-text">
+                    <div class="loading"></div>
+                    加载商品...
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('productCount').textContent = '加载中...';
+    }
+
+    // 显示错误状态
+    function showError(message, retryCallback = null) {
+        const productsList = document.getElementById('productsList');
+        productsList.innerHTML = `
+            <div class="error-state">
+                <div class="icon">⚠️</div>
+                <h3>加载失败</h3>
+                <p>${message}</p>
+                ${retryCallback ? 
+                    `<button class="btn btn-primary retry-button" id="retryBtn">重试</button>` : 
+                    ''
+                }
+            </div>
+        `;
+        
+        if (retryCallback) {
+            document.getElementById('retryBtn').addEventListener('click', retryCallback);
+        }
+        
+        document.getElementById('totalProducts').textContent = '-';
+        document.getElementById('myInquiries').textContent = '-';
+        document.getElementById('pendingInquiries').textContent = '-';
+        document.getElementById('productCount').textContent = '加载失败';
+    }
+
+    // 显示空状态
+    function showEmptyState() {
+        const productsList = document.getElementById('productsList');
+        productsList.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">📦</div>
+                <h3>暂无商品</h3>
+                <p>当前没有可显示的商品数据</p>
+            </div>
+        `;
+        
+        document.getElementById('productCount').textContent = '0 个商品';
+    }
+
+    // 设置刷新按钮状态
+    function setRefreshButtonLoading(loading) {
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (loading) {
+            refreshBtn.classList.add('loading');
+            refreshBtn.disabled = true;
+        } else {
+            refreshBtn.classList.remove('loading');
+            refreshBtn.disabled = false;
+        }
+    }
+
+    // 绑定商品详情点击事件
+    function bindProductDetailEvents() {
+        // 使用事件委托，监听整个商品列表的点击事件
+        const productsList = document.getElementById('productsList');
+        productsList.addEventListener('click', function(e) {
+            // 检查是否点击了查看详情按钮
+            if (e.target.classList.contains('view-detail-btn') || 
+                e.target.closest('.view-detail-btn')) {
+                
+                const button = e.target.classList.contains('view-detail-btn') 
+                    ? e.target 
+                    : e.target.closest('.view-detail-btn');
+                
+                const productId = button.getAttribute('data-product-id');
+                console.log('点击查看详情，商品ID:', productId);
+                viewProductDetail(productId);
+            }
+        });
+    }
+
+    // 查看商品详情
+    function viewProductDetail(productId) {
+        console.log('查看商品详情，商品ID:', productId);
+        
+        if (!productId || productId === 'undefined') {
+            console.error('无效的商品ID:', productId);
+            showTempMessage('商品信息无效', 'error');
+            return;
+        }
+        
+        // 跳转到商品详情页
+        window.location.href = `/product-detail?id=${productId}`;
+    }
+
+    // 显示临时消息
+    function showTempMessage(message, type = 'info') {
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = message;
+        messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 4px;
+            color: white;
+            z-index: 10000;
+            font-size: 14px;
+            ${type === 'error' ? 'background: #e74c3c;' : ''}
+            ${type === 'info' ? 'background: #3498db;' : ''}
+            ${type === 'success' ? 'background: #27ae60;' : ''}
+        `;
+        
+        document.body.appendChild(messageDiv);
+        
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
+        }, 3000);
+    }
+
+    // 加载数据
+    async function loadDashboardData() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+            return;
+        }
+
+        showLoading();
+        setRefreshButtonLoading(true);
+
+        try {
+            const [productsResponse, inquiriesResponse] = await Promise.all([
+                fetch('/api/products', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }),
+                fetch('/api/inquiries/my-inquiries', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+            ]);
+
+            if (!productsResponse.ok) {
+                throw new Error(`商品数据加载失败: ${productsResponse.status}`);
+            }
+            if (!inquiriesResponse.ok) {
+                throw new Error(`询价数据加载失败: ${inquiriesResponse.status}`);
+            }
+
+            const productsData = await productsResponse.json();
+            const inquiriesData = await inquiriesResponse.json();
+
+            // 移除加载状态
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.classList.remove('loading');
+            });
+
+            // 更新统计信息
+            if (productsData.status === 'success') {
+                document.getElementById('totalProducts').textContent = productsData.results;
+                document.getElementById('productCount').textContent = `${productsData.results} 个商品`;
+                
+                // 更新商品列表
+                if (productsData.data.products && productsData.data.products.length > 0) {
+                    const productsList = document.getElementById('productsList');
+                    productsList.innerHTML = productsData.data.products.map(product => `
+                        <div class="product-card">
+                            <h4>${product.name}</h4>
+                            <p class="product-description">${product.description}</p>
+                            <p class="price">¥${product.price} / ${product.unit}</p>
+                            <p class="seller">供应商：${product.seller?.company || '未知供应商'}</p>
+                            <button class="btn btn-primary view-detail-btn" data-product-id="${product._id}">
+                                查看详情
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    showEmptyState();
+                }
+            }
+
+            // 更新询价统计
+            if (inquiriesData.status === 'success') {
+                document.getElementById('myInquiries').textContent = inquiriesData.results;
+                
+                const pendingCount = inquiriesData.data.inquiries ? 
+                    inquiriesData.data.inquiries.filter(inquiry => inquiry.status === 'pending').length : 0;
+                document.getElementById('pendingInquiries').textContent = pendingCount;
+            }
+
+        } catch (error) {
+            console.error('加载仪表盘数据失败:', error);
+            showError(error.message, loadDashboardData);
+        } finally {
+            setRefreshButtonLoading(false);
+        }
+    }
+
+    // 页面加载时执行
+    document.addEventListener('DOMContentLoaded', function() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = localStorage.getItem('token');
+        
+        if (!token || !user) {
+            window.location.href = '/';
+            return;
+        }
+        
+        currentUser = user;
+        document.getElementById('userWelcome').textContent = `欢迎，${user.username}（${user.company}）`;
+
+        // 绑定商品详情事件
+        bindProductDetailEvents();
+
+        // 加载数据
+        loadDashboardData();
+
+        // 刷新按钮事件
+        document.getElementById('refreshBtn').addEventListener('click', loadDashboardData);
+
+        // 退出登录功能
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (window.app && window.app.logout) {
+                window.app.logout();
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            }
+        });
+    });
+    </script>
+</body>
+</html>

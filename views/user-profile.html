@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人资料 - 工业平台</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .profile-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .profile-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:read-only {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+        
+        .btn-group {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>工业平台</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard">返回仪表盘</a>
+                <a href="#" id="logout">退出登录</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="profile-container">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <h2>个人资料</h2>
+                    <div class="profile-avatar" id="userAvatar">
+                        <!-- 头像显示用户名的第一个字符 -->
+                    </div>
+                </div>
+                
+                <div id="successMessage" class="success-message">
+                    资料更新成功！
+                </div>
+                
+                <div id="errorMessage" class="error-message">
+                    <!-- 错误信息 -->
+                </div>
+                
+                <form id="profileForm">
+                    <div class="profile-form">
+                        <div class="form-group">
+                            <label for="username">用户名</label>
+                            <input type="text" id="username" name="username" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">邮箱地址</label>
+                            <input type="email" id="email" name="email" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="company">公司名称</label>
+                            <input type="text" id="company" name="company" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">联系电话</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="role">用户角色</label>
+                            <select id="role" name="role" disabled>
+                                <option value="buyer">采购商</option>
+                                <option value="seller">供应商</option>
+                                <option value="admin">管理员</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>注册时间</label>
+                            <input type="text" id="createdAt" readonly>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <h3>修改密码</h3>
+                            <p style="color: #666; margin-bottom: 1rem;">如需要修改密码，请填写以下字段</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="currentPassword">当前密码</label>
+                            <input type="password" id="currentPassword" name="currentPassword">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="newPassword">新密码</label>
+                            <input type="password" id="newPassword" name="newPassword" minlength="6">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirmPassword">确认新密码</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" minlength="6">
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='/dashboard'">
+                            取消
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            保存更改
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 工业平台. 保留所有权利.</p>
+    </footer>
+
+    <script>
+    let currentUser = null;
+
+    // 显示成功消息
+    function showSuccess(message) {
+        const successEl = document.getElementById('successMessage');
+        successEl.textContent = message;
+        successEl.style.display = 'block';
+        setTimeout(() => {
+            successEl.style.display = 'none';
+        }, 3000);
+    }
+
+    // 显示错误消息
+    function showError(message) {
+        const errorEl = document.getElementById('errorMessage');
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        setTimeout(() => {
+            errorEl.style.display = 'none';
+        }, 5000);
+    }
+
+    // 显示用户资料
+    function displayUserProfile(user) {
+        console.log('显示用户资料:', user);
+        // 设置头像
+        document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+        
+        // 填充表单数据
+        document.getElementById('username').value = user.username;
+        document.getElementById('email').value = user.email;
+        document.getElementById('company').value = user.company;
+        document.getElementById('phone').value = user.phone || '';
+        document.getElementById('role').value = user.role;
+        document.getElementById('createdAt').value = new Date(user.createdAt).toLocaleString();
+    }
+
+    // 加载用户资料
+    async function loadUserProfile() {
+        try {
+            console.log('开始加载用户资料...');
+            
+            // 首先检查本地存储
+            const token = localStorage.getItem('token');
+            const localUser = JSON.parse(localStorage.getItem('user'));
+            
+            console.log('本地Token:', token);
+            console.log('本地用户:', localUser);
+
+            if (!token) {
+                showError('未找到访问令牌，请重新登录');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                return;
+            }
+
+            // 如果有本地用户数据，先显示
+            if (localUser) {
+                console.log('使用本地用户数据临时显示');
+                displayUserProfile(localUser);
+            }
+
+            // 从API加载最新数据
+            console.log('发送API请求到 /api/users/profile');
+            const response = await fetch('/api/users/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('响应状态:', response.status);
+            console.log('响应头:', response.headers);
+
+            const data = await response.json();
+            console.log('API响应数据:', data);
+
+            if (data.status === 'success') {
+                currentUser = data.data.user;
+                displayUserProfile(currentUser);
+                console.log('用户资料加载成功');
+            } else {
+                showError('加载用户资料失败: ' + data.message);
+                console.error('API返回错误:', data.message);
+                
+                // 如果API失败但有本地数据，继续使用本地数据
+                if (localUser) {
+                    console.log('使用本地存储的数据继续显示');
+                    currentUser = localUser;
+                }
+            }
+        } catch (error) {
+            console.error('加载用户资料失败:', error);
+            showError('加载失败，请重试');
+            
+            // 如果有本地数据，使用本地数据
+            const localUser = JSON.parse(localStorage.getItem('user'));
+            if (localUser) {
+                console.log('发生错误，使用本地存储的数据');
+                displayUserProfile(localUser);
+            }
+        }
+    }
+
+    // 提交表单
+    document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        console.log('开始提交表单...');
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showError('请重新登录');
+            window.location.href = '/';
+            return;
+        }
+        
+        const formData = {
+            company: document.getElementById('company').value,
+            phone: document.getElementById('phone').value
+        };
+
+        console.log('表单数据:', formData);
+
+        // 检查密码修改
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword || currentPassword) {
+            console.log('检测到密码修改请求');
+            if (!currentPassword) {
+                showError('请输入当前密码');
+                return;
+            }
+            if (newPassword.length < 6) {
+                showError('新密码至少需要6位');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showError('新密码和确认密码不一致');
+                return;
+            }
+            formData.currentPassword = currentPassword;
+            formData.newPassword = newPassword;
+        }
+
+        try {
+            console.log('发送更新请求...');
+            const response = await fetch('/api/users/profile', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            console.log('更新响应状态:', response.status);
+            const data = await response.json();
+            console.log('更新响应数据:', data);
+
+            if (data.status === 'success') {
+                showSuccess('资料更新成功！');
+                // 清空密码字段
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                
+                // 更新本地存储的用户信息
+                if (data.data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    currentUser = data.data.user;
+                    displayUserProfile(currentUser);
+                }
+            } else {
+                showError('更新失败：' + data.message);
+            }
+        } catch (error) {
+            console.error('更新错误:', error);
+            showError('更新失败，请重试');
+        }
+    });
+
+    // 页面加载时执行
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('页面加载完成');
+        
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = localStorage.getItem('token');
+        
+        console.log('页面加载时的用户:', user);
+        console.log('页面加载时的token:', token);
+        
+        if (!token || !user) {
+            console.log('未找到用户信息，跳转到登录页');
+            window.location.href = '/';
+            return;
+        }
+        
+        loadUserProfile();
+        
+        // 退出登录功能
+        document.getElementById('logout').addEventListener('click', function() {
+            console.log('用户退出登录');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        });
+    });
+</script>
+</body>
+</html>

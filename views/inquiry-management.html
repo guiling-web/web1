@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>询价管理 - 工业平台</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .inquiry-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .inquiry-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab-button {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-button.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .inquiry-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .inquiry-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+        
+        .inquiry-card.pending {
+            border-left-color: #f39c12;
+        }
+        
+        .inquiry-card.responded {
+            border-left-color: #27ae60;
+        }
+        
+        .inquiry-card.rejected {
+            border-left-color: #e74c3c;
+        }
+        
+        .inquiry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .inquiry-product {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .inquiry-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-responded {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .inquiry-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .response-form {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>工业平台</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard">返回仪表盘</a>
+                <a href="#" id="logout">退出登录</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="inquiry-container">
+            <div class="dashboard-header">
+                <h2>询价管理</h2>
+            </div>
+            
+            <div class="inquiry-tabs">
+                <button class="tab-button active" onclick="switchTab('buyer')">我的询价</button>
+                <button class="tab-button" onclick="switchTab('seller')">收到的询价</button>
+            </div>
+            
+            <div id="buyerInquiries" class="inquiry-list">
+                <div class="loading-state">正在加载我的询价...</div>
+            </div>
+            
+            <div id="sellerInquiries" class="inquiry-list" style="display: none;">
+                <div class="loading-state">正在加载收到的询价...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 工业平台. 保留所有权利.</p>
+    </footer>
+
+    <script>
+        let currentUser = null;
+
+        // 切换标签页
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('buyerInquiries').style.display = 'none';
+            document.getElementById('sellerInquiries').style.display = 'none';
+            
+            if (tab === 'buyer') {
+                document.querySelector('.tab-button:nth-child(1)').classList.add('active');
+                document.getElementById('buyerInquiries').style.display = 'grid';
+                loadBuyerInquiries();
+            } else {
+                document.querySelector('.tab-button:nth-child(2)').classList.add('active');
+                document.getElementById('sellerInquiries').style.display = 'grid';
+                loadSellerInquiries();
+            }
+        }
+
+        // 显示加载状态
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '<div class="loading-state">正在加载...</div>';
+        }
+
+        // 显示错误状态
+        function showError(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="error-state">
+                    <h3>加载失败</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="retryLoading('${containerId}')">重试</button>
+                </div>
+            `;
+        }
+
+        // 显示空状态
+        function showEmptyState(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <h3>${message}</h3>
+                    <p>暂无相关询价记录</p>
+                </div>
+            `;
+        }
+
+        // 重试加载
+        function retryLoading(containerId) {
+            if (containerId === 'buyerInquiries') {
+                loadBuyerInquiries();
+            } else {
+                loadSellerInquiries();
+            }
+        }
+
+        // 加载我的询价
+        async function loadBuyerInquiries() {
+            try {
+                showLoading('buyerInquiries');
+                
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                console.log('正在加载我的询价...');
+                const response = await fetch('/api/inquiries/my-inquiries', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('我的询价响应状态:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('我的询价数据:', data);
+
+                const container = document.getElementById('buyerInquiries');
+
+                if (data.status === 'success') {
+                    if (data.data.inquiries && data.data.inquiries.length > 0) {
+                        container.innerHTML = data.data.inquiries.map(inquiry => `
+                            <div class="inquiry-card ${inquiry.status}">
+                                <div class="inquiry-header">
+                                    <div class="inquiry-product">
+                                        ${inquiry.product?.name || '未知商品'}
+                                    </div>
+                                    <div class="inquiry-status status-${inquiry.status}">
+                                        ${getStatusText(inquiry.status)}
+                                    </div>
+                                </div>
+                                
+                                <div class="inquiry-details">
+                                    <div class="detail-item">
+                                        <span>数量：</span>
+                                        <span>${inquiry.quantity} ${inquiry.product?.unit || '个'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>询价时间：</span>
+                                        <span>${new Date(inquiry.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>供应商：</span>
+                                        <span>${inquiry.seller?.company || '未知供应商'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>我的留言：</span>
+                                        <span>${inquiry.message}</span>
+                                    </div>
+                                </div>
+                                
+                                ${inquiry.response ? `
+                                    <div class="response-info">
+                                        <h4>供应商回复：</h4>
+                                        <p>${inquiry.response.message}</p>
+                                        <div class="detail-item">
+                                            <span>报价：</span>
+                                            <span>¥${inquiry.response.price}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span>交货时间：</span>
+                                            <span>${inquiry.response.deliveryTime}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('');
+                    } else {
+                        showEmptyState('buyerInquiries', '暂无我的询价');
+                    }
+                } else {
+                    throw new Error(data.message || '获取询价数据失败');
+                }
+            } catch (error) {
+                console.error('加载我的询价错误:', error);
+                showError('buyerInquiries', error.message);
+            }
+        }
+
+        // 加载收到的询价
+        async function loadSellerInquiries() {
+            try {
+                showLoading('sellerInquiries');
+                
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                console.log('正在加载收到的询价...');
+                const response = await fetch('/api/inquiries/seller-inquiries', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('收到的询价响应状态:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('收到的询价数据:', data);
+
+                const container = document.getElementById('sellerInquiries');
+
+                if (data.status === 'success') {
+                    if (data.data.inquiries && data.data.inquiries.length > 0) {
+                        container.innerHTML = data.data.inquiries.map(inquiry => `
+                            <div class="inquiry-card ${inquiry.status}">
+                                <div class="inquiry-header">
+                                    <div class="inquiry-product">
+                                        ${inquiry.product?.name || '未知商品'}
+                                    </div>
+                                    <div class="inquiry-status status-${inquiry.status}">
+                                        ${getStatusText(inquiry.status)}
+                                    </div>
+                                </div>
+                                
+                                <div class="inquiry-details">
+                                    <div class="detail-item">
+                                        <span>采购商：</span>
+                                        <span>${inquiry.buyer?.company || '未知采购商'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>数量：</span>
+                                        <span>${inquiry.quantity} ${inquiry.product?.unit || '个'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>联系人：</span>
+                                        <span>${inquiry.buyer?.username || '未知联系人'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>电话：</span>
+                                        <span>${inquiry.buyer?.phone || '未提供'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>采购商留言：</span>
+                                        <span>${inquiry.message}</span>
+                                    </div>
+                                </div>
+                                
+                                ${inquiry.status === 'pending' ? `
+                                    <div class="response-form">
+                                        <h4>回复询价</h4>
+                                        <form onsubmit="respondToInquiry('${inquiry._id}', event)">
+                                            <div class="form-group">
+                                                <label>回复内容：</label>
+                                                <textarea name="message" rows="3" required placeholder="请输入回复内容..."></textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>报价：</label>
+                                                <input type="number" name="price" step="0.01" required placeholder="请输入报价">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>交货时间：</label>
+                                                <input type="text" name="deliveryTime" placeholder="例如：7-10个工作日" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-success btn-sm">发送回复</button>
+                                        </form>
+                                    </div>
+                                ` : inquiry.response ? `
+                                    <div class="response-info">
+                                        <h4>我的回复：</h4>
+                                        <p>${inquiry.response.message}</p>
+                                        <div class="detail-item">
+                                            <span>报价：</span>
+                                            <span>¥${inquiry.response.price}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span>交货时间：</span>
+                                            <span>${inquiry.response.deliveryTime}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('');
+                    } else {
+                        showEmptyState('sellerInquiries', '暂无收到的询价');
+                    }
+                } else {
+                    throw new Error(data.message || '获取卖家询价数据失败');
+                }
+            } catch (error) {
+                console.error('加载收到的询价错误:', error);
+                showError('sellerInquiries', error.message);
+            }
+        }
+
+        // 回复询价
+        async function respondToInquiry(inquiryId, e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = {
+                message: form.message.value,
+                price: parseFloat(form.price.value),
+                deliveryTime: form.deliveryTime.value
+            };
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/inquiries/${inquiryId}/respond`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    alert('回复发送成功！');
+                    loadSellerInquiries();
+                } else {
+                    alert('回复失败：' + data.message);
+                }
+            } catch (error) {
+                console.error('回复询价错误:', error);
+                alert('回复失败，请重试');
+            }
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待回复',
+                'responded': '已回复',
+                'accepted': '已接受',
+                'rejected': '已拒绝',
+                'completed': '已完成'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = user;
+            loadBuyerInquiries();
+            
+            // 退出登录功能
+            document.getElementById('logout').addEventListener('click', function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+</html>

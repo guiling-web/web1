@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品详情 - 工业平台</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* 商品详情页特定样式 */
+        .product-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .loading-overlay.hidden {
+            display: none;
+        }
+        
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .product-detail.loading {
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-image-section {
+            position: relative;
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #666;
+            overflow: hidden;
+            border: 2px solid #e9ecef;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .product-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: #e74c3c;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .product-info h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+            line-height: 1.2;
+        }
+        
+        .product-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .product-price {
+            font-size: 2.5rem;
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .price-unit {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: normal;
+        }
+        
+        .stock-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: #27ae60;
+            font-weight: 500;
+        }
+        
+        .stock-info.low {
+            color: #e74c3c;
+        }
+        
+        .specifications {
+            margin: 2rem 0;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .specifications h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .spec-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .spec-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .seller-info {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        
+        .seller-info h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .inquiry-form {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .inquiry-form::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(45deg);
+        }
+        
+        .inquiry-form h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        }
+        
+        .form-group.error input, .form-group.error textarea {
+            border: 2px solid #e74c3c;
+            background: #fdf2f2;
+        }
+        
+        .error-message {
+            color: #f8d7da;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        .form-group.error .error-message {
+            display: block;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .btn-success:hover:not(.loading) {
+            background: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        }
+        
+        .btn-success.loading {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+        
+        .btn-success.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .error-state, .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .error-state .icon, .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .error-state h2, .empty-state h2 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .error-state p, .empty-state p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .back-button {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .product-detail {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .product-detail-container {
+                padding: 1rem;
+            }
+            
+            .product-detail {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 1.5rem;
+            }
+            
+            .product-image {
+                height: 300px;
+            }
+            
+            .product-price {
+                font-size: 2rem;
+            }
+            
+            .spec-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .inquiry-form {
+                padding: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>工业平台</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="back-button">
+                    ← 返回仪表盘
+                </a>
+                <a href="#" id="logout">退出登录</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <!-- 全局加载遮罩 -->
+        <div id="globalLoading" class="loading-overlay">
+            <div class="loading" style="width: 40px; height: 40px;"></div>
+            <div class="loading-text">加载商品详情中...</div>
+        </div>
+
+        <div class="product-detail-container">
+            <div id="productDetail">
+                <!-- 商品详情将通过JavaScript动态加载 -->
+                <div class="product-detail loading">
+                    <div class="loading-text">
+                        <div class="loading"></div>
+                        加载商品详情...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 工业平台. 保留所有权利.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+    let currentProduct = null;
+    let isLoading = false;
+
+    // 获取商品ID（从URL参数获取）
+    function getProductId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
+
+    // 显示加载状态
+    function showLoading() {
+        isLoading = true;
+        document.getElementById('globalLoading').classList.remove('hidden');
+        document.getElementById('productDetail').innerHTML = `
+            <div class="product-detail loading">
+                <div class="loading-text">
+                    <div class="loading"></div>
+                    加载商品详情...
+                </div>
+            </div>
+        `;
+    }
+
+    // 隐藏加载状态
+    function hideLoading() {
+        isLoading = false;
+        document.getElementById('globalLoading').classList.add('hidden');
+    }
+
+    // 显示错误状态
+    function showError(message, retryCallback = null) {
+        hideLoading();
+        const productDetail = document.getElementById('productDetail');
+        productDetail.innerHTML = `
+            <div class="error-state">
+                <div class="icon">⚠️</div>
+                <h2>加载失败</h2>
+                <p>${message}</p>
+                <div class="action-buttons">
+                    <a href="/dashboard" class="back-button">返回仪表盘</a>
+                    ${retryCallback ? 
+                        `<button class="btn btn-primary" onclick="${retryCallback}">重试</button>` : 
+                        ''
+                    }
+                </div>
+            </div>
+        `;
+    }
+
+    // 显示空状态
+    function showEmptyState() {
+        hideLoading();
+        const productDetail = document.getElementById('productDetail');
+        productDetail.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">📦</div>
+                <h2>商品不存在</h2>
+                <p>您访问的商品可能已被删除或不存在</p>
+                <div class="action-buttons">
+                    <a href="/dashboard" class="back-button">返回仪表盘</a>
+                </div>
+            </div>
+        `;
+    }
+
+    // 表单验证
+    function validateInquiryForm() {
+        let isValid = true;
+        const quantity = document.getElementById('quantity');
+        const message = document.getElementById('message');
+        
+        // 重置错误状态
+        document.querySelectorAll('.form-group').forEach(group => {
+            group.classList.remove('error');
+        });
+        
+        // 数量验证
+        if (!quantity.value.trim()) {
+            quantity.parentElement.classList.add('error');
+            isValid = false;
+        } else if (isNaN(quantity.value) || parseInt(quantity.value) <= 0) {
+            quantity.parentElement.classList.add('error');
+            isValid = false;
+        }
+        
+        // 留言验证
+        if (!message.value.trim()) {
+            message.parentElement.classList.add('error');
+            isValid = false;
+        } else if (message.value.trim().length < 10) {
+            message.parentElement.classList.add('error');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+
+    // 设置按钮加载状态
+    function setSubmitButtonLoading(loading) {
+        const submitBtn = document.getElementById('submitInquiryBtn');
+        if (loading) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = '提交中...';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.textContent = '提交询价';
+        }
+    }
+
+    // 显示成功消息
+    function showSuccess(message) {
+        if (window.app && window.app.showNotification) {
+            window.app.showNotification(message, 'success');
+        } else {
+            alert(message);
+        }
+    }
+
+    // 加载商品详情
+    async function loadProductDetail() {
+        const productId = getProductId();
+        if (!productId) {
+            showEmptyState();
+            return;
+        }
+
+        showLoading();
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/products/${productId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                currentProduct = data.data.product;
+                displayProductDetail(currentProduct);
+            } else {
+                showError(data.message || '加载商品详情失败');
+            }
+        } catch (error) {
+            console.error('加载商品详情失败:', error);
+            showError('网络错误，请检查网络连接后重试', 'loadProductDetail()');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // 显示商品详情
+    function displayProductDetail(product) {
+        const productDetail = document.getElementById('productDetail');
+        
+        // 库存状态
+        const stockStatus = product.stock > 100 ? '充足' : 
+                           product.stock > 10 ? '一般' : '紧张';
+        const stockClass = product.stock <= 10 ? 'low' : '';
+        
+        productDetail.innerHTML = `
+            <div class="product-detail">
+                <div class="product-image-section">
+                    <div class="product-image">
+                        ${product.images && product.images.length > 0 ? 
+                            `<img src="${product.images[0]}" alt="${product.name}" onerror="this.style.display='none'">` : 
+                            '<div>暂无图片</div>'
+                        }
+                    </div>
+                    ${product.stock <= 10 ? '<div class="product-badge">库存紧张</div>' : ''}
+                </div>
+                
+                <div class="product-info">
+                    <h1>${product.name}</h1>
+                    <p class="product-description">${product.description}</p>
+                    
+                    <div class="product-price">
+                        ¥${product.price}
+                        <span class="price-unit">/ ${product.unit}</span>
+                    </div>
+                    
+                    <div class="stock-info ${stockClass}">
+                        <span>库存：${product.stock} ${product.unit}</span>
+                        <span>（${stockStatus}）</span>
+                    </div>
+                    
+                    <div class="specifications">
+                        <h3>产品规格</h3>
+                        <div class="spec-grid">
+                            <div class="spec-item">
+                                <span class="spec-label">产品类别</span>
+                                <span class="spec-value">${product.category}</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">计量单位</span>
+                                <span class="spec-value">${product.unit}</span>
+                            </div>
+                            ${product.specifications ? Object.entries(product.specifications).map(([key, value]) => `
+                                <div class="spec-item">
+                                    <span class="spec-label">${key}</span>
+                                    <span class="spec-value">${value}</span>
+                                </div>
+                            `).join('') : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="seller-info">
+                        <h4>供应商信息</h4>
+                        <p><strong>公司名称：</strong>${product.seller.company}</p>
+                        <p><strong>联系人：</strong>${product.seller.username}</p>
+                    </div>
+                    
+                    <div class="inquiry-form">
+                        <h3>立即询价</h3>
+                        <form id="inquiryForm">
+                            <div class="form-group">
+                                <label for="quantity">采购数量</label>
+                                <input type="number" id="quantity" name="quantity" 
+                                       min="1" max="${product.stock}" 
+                                       placeholder="请输入采购数量" required>
+                                <div class="error-message">请输入有效的采购数量</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="message">询价留言</label>
+                                <textarea id="message" name="message" rows="4" 
+                                          placeholder="请详细描述您的需求，包括用途、技术要求等（至少10个字符）" 
+                                          required></textarea>
+                                <div class="error-message">请输入至少10个字符的详细描述</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="expectedPrice">期望价格（可选）</label>
+                                <input type="number" id="expectedPrice" name="expectedPrice" 
+                                       step="0.01" placeholder="单位：元">
+                            </div>
+                            
+                            <button type="submit" class="btn-success" id="submitInquiryBtn">
+                                提交询价
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 添加询价表单提交事件
+        document.getElementById('inquiryForm').addEventListener('submit', submitInquiry);
+        
+        // 实时表单验证
+        document.getElementById('quantity').addEventListener('input', function() {
+            if (this.parentElement.classList.contains('error')) {
+                this.parentElement.classList.remove('error');
+            }
+        });
+        
+        document.getElementById('message').addEventListener('input', function() {
+            if (this.parentElement.classList.contains('error')) {
+                this.parentElement.classList.remove('error');
+            }
+        });
+    }
+
+    // 提交询价
+    async function submitInquiry(e) {
+        e.preventDefault();
+        
+        if (isLoading) return;
+        
+        // 表单验证
+        if (!validateInquiryForm()) {
+            return;
+        }
+        
+        const productId = getProductId();
+        const formData = {
+            productId: productId,
+            quantity: parseInt(document.getElementById('quantity').value),
+            message: document.getElementById('message').value.trim(),
+            expectedPrice: document.getElementById('expectedPrice').value || null
+        };
+
+        setSubmitButtonLoading(true);
+        isLoading = true;
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/inquiries', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                showSuccess('询价提交成功！正在跳转到询价管理页面...');
+                
+                // 跳转到询价管理页面
+                setTimeout(() => {
+                    window.location.href = '/inquiry-management';
+                }, 2000);
+            } else {
+                showError(data.message || '提交失败，请重试');
+            }
+        } catch (error) {
+            console.error('提交询价失败:', error);
+            showError('网络错误，请检查网络连接后重试');
+        } finally {
+            setSubmitButtonLoading(false);
+            isLoading = false;
+        }
+    }
+
+    // 页面加载时执行
+    document.addEventListener('DOMContentLoaded', function() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            window.location.href = '/';
+            return;
+        }
+        
+        loadProductDetail();
+        
+        // 退出登录功能
+        document.getElementById('logout').addEventListener('click', function() {
+            if (window.app && window.app.logout) {
+                window.app.logout();
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            }
+        });
+    });
+    </script>
+</body>
+</html>

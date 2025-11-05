@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{csrfToken}}"> <!-- 添加CSRF Token meta标签 -->
+    <title>工业平台 - 注册</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --primary-light: #4895ef;
+            --success: #4cc9f0;
+            --error: #f94144;
+            --warning: #f8961e;
+            --dark: #2b2d42;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-primary: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+            --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--dark);
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand h1 {
+            background: linear-gradient(135deg, var(--white), #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 2.5rem;
+            font-size: 1rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+
+        .form-input:focus + .input-icon, .form-select:focus + .input-icon {
+            color: var(--primary);
+        }
+
+        .global-error {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(244, 67, 54, 0.2);
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .global-success {
+            background: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .global-error.show, .global-success.show {
+            display: block;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .form-group.error .form-input, .form-group.error .form-select {
+            border-color: var(--error);
+            background: rgba(244, 67, 54, 0.05);
+        }
+
+        .form-group.error .input-icon {
+            color: var(--error);
+        }
+
+        .form-group.success .form-input, .form-group.success .form-select {
+            border-color: var(--success);
+            background: rgba(76, 201, 240, 0.05);
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 6px;
+            border-radius: 3px;
+            background: #f0f0f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .password-strength.weak .password-strength-bar {
+            background: var(--error);
+            width: 33%;
+        }
+
+        .password-strength.medium .password-strength-bar {
+            background: var(--warning);
+            width: 66%;
+        }
+
+        .password-strength.strong .password-strength-bar {
+            background: var(--success);
+            width: 100%;
+        }
+
+        .password-strength-text {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .password-strength.weak .password-strength-text {
+            color: var(--error);
+        }
+
+        .password-strength.medium .password-strength-text {
+            color: var(--warning);
+        }
+
+        .password-strength.strong .password-strength-text {
+            color: var(--success);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 2rem;
+            color: #6c757d;
+        }
+
+        .auth-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .auth-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .auth-link a:hover::after {
+            width: 100%;
+        }
+
+        .auth-link a:hover {
+            color: var(--primary-dark);
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .auth-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .navbar {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 1.5rem;
+            }
+
+            .auth-card h2 {
+                font-size: 1.5rem;
+            }
+
+            .form-input, .form-select {
+                padding: 0.875rem 0.875rem 0.875rem 2.5rem;
+            }
+
+            .input-icon {
+                left: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>工业平台</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">登录</a>
+                <a href="/register">注册</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>用户注册</h2>
+                <p class="auth-subtitle">创建您的工业平台账户</p>
+                
+                <!-- 全局消息提示 -->
+                <div id="globalError" class="global-error">
+                    <!-- 错误信息将在这里显示 -->
+                </div>
+                
+                <div id="globalSuccess" class="global-success">
+                    <!-- 成功信息将在这里显示 -->
+                </div>
+                
+                <!-- 标准 CSRF Token 隐藏字段 -->
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="username" class="form-label">用户名</label>
+                        <div class="input-group">
+                            <input type="text" id="username" name="username" class="form-input" required 
+                                   placeholder="请输入用户名（3-20位字符）"
+                                   minlength="3" maxlength="20">
+                            <span class="input-icon">👤</span>
+                        </div>
+                        <div class="error-message" id="usernameError">
+                            用户名必须为3-20位字符
+                        </div>
+                        <div class="form-hint">用于显示和识别的名称</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">邮箱地址</label>
+                        <div class="input-group">
+                            <input type="email" id="email" name="email" class="form-input" required 
+                                   placeholder="请输入有效的邮箱地址">
+                            <span class="input-icon">📧</span>
+                        </div>
+                        <div class="error-message" id="emailError">
+                            请输入有效的邮箱地址
+                        </div>
+                        <div class="form-hint">用于登录和接收通知</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company" class="form-label">公司名称</label>
+                        <div class="input-group">
+                            <input type="text" id="company" name="company" class="form-input" required 
+                                   placeholder="请输入您的公司名称">
+                            <span class="input-icon">🏢</span>
+                        </div>
+                        <div class="error-message" id="companyError">
+                            公司名称不能为空
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone" class="form-label">联系电话</label>
+                        <div class="input-group">
+                            <input type="tel" id="phone" name="phone" class="form-input"
+                                   placeholder="请输入联系电话（可选）"
+                                   pattern="[0-9]{11}">
+                            <span class="input-icon">📱</span>
+                        </div>
+                        <div class="error-message" id="phoneError">
+                            请输入有效的11位手机号码
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="role" class="form-label">用户角色</label>
+                        <div class="input-group">
+                            <select id="role" name="role" class="form-select" required>
+                                <option value="">请选择角色</option>
+                                <option value="buyer">采购商</option>
+                                <option value="seller">供应商</option>
+                            </select>
+                            <span class="input-icon">🎯</span>
+                        </div>
+                        <div class="error-message" id="roleError">
+                            请选择用户角色
+                        </div>
+                        <div class="form-hint">采购商：购买商品 | 供应商：销售商品</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">密码</label>
+                        <div class="input-group">
+                            <input type="password" id="password" name="password" class="form-input" required 
+                                   placeholder="请输入密码（至少6位）"
+                                   minlength="6">
+                            <span class="input-icon">🔒</span>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="password-strength-bar"></div>
+                        </div>
+                        <div class="password-strength-text" id="passwordStrengthText">
+                            密码强度：无
+                        </div>
+                        <div class="error-message" id="passwordError">
+                            密码至少需要6位字符
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="passwordConfirm" class="form-label">确认密码</label>
+                        <div class="input-group">
+                            <input type="password" id="passwordConfirm" name="passwordConfirm" class="form-input" required 
+                                   placeholder="请再次输入密码"
+                                   minlength="6">
+                            <span class="input-icon">🔒</span>
+                        </div>
+                        <div class="error-message" id="passwordConfirmError">
+                            两次输入的密码不一致
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        注册账户
+                    </button>
+                </form>
+                
+                <p class="auth-link">
+                    已有账户？ <a href="/">立即登录</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 工业平台. 保留所有权利.</p>
+    </footer>
+
+    <script>
+    // ==================== 改进的 CSRF Token 管理器 ====================
+    class CSRFTokenManager {
+        constructor() {
+            this.token = null;
+            this.initialized = false;
+        }
+
+        // 初始化 CSRF Token
+        async initialize() {
+            if (this.initialized) return;
+
+            console.log('🔄 正在初始化 CSRF Token...');
+
+            // 方法1: 从隐藏字段获取（服务器端渲染）
+            this.token = this.getTokenFromHiddenField();
+            if (this.isValidToken(this.token)) {
+                console.log('✅ 从隐藏字段获取到 CSRF Token:', this.token);
+                this.initialized = true;
+                return;
+            }
+
+            // 方法2: 从 meta 标签获取
+            this.token = this.getTokenFromMetaTag();
+            if (this.isValidToken(this.token)) {
+                console.log('✅ 从 meta 标签获取到 CSRF Token:', this.token);
+                this.initialized = true;
+                return;
+            }
+
+            // 方法3: 从 API 获取（如果前两种方法都失败）
+            try {
+                console.log('🔄 尝试从 API 获取 CSRF Token...');
+                const response = await fetch('/api/csrf-token', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.token = data.data.csrfToken;
+                    if (this.isValidToken(this.token)) {
+                        console.log('✅ 从 API 获取到 CSRF Token:', this.token);
+                        this.initialized = true;
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ 从 API 获取 CSRF Token 失败:', error);
+            }
+
+            // 方法4: 从 Cookie 获取（备用方案）
+            this.token = this.getTokenFromCookie();
+            if (this.isValidToken(this.token)) {
+                console.log('✅ 从 Cookie 获取到 CSRF Token:', this.token);
+                this.initialized = true;
+                return;
+            }
+
+            console.warn('❌ 无法获取有效的 CSRF Token');
+            this.initialized = true;
+        }
+
+        // 从隐藏字段获取
+        getTokenFromHiddenField() {
+            const csrfInput = document.querySelector('input[name="_csrf"]');
+            const token = csrfInput ? csrfInput.value : null;
+            return this.isValidToken(token) ? token : null;
+        }
+
+        // 从 meta 标签获取
+        getTokenFromMetaTag() {
+            const metaTag = document.querySelector('meta[name="csrf-token"]');
+            const token = metaTag ? metaTag.getAttribute('content') : null;
+            return this.isValidToken(token) ? token : null;
+        }
+
+        // 从 Cookie 获取
+        getTokenFromCookie() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                // 常见的 CSRF Token Cookie 名称
+                const cookieNames = [
+                    'csrfToken', 
+                    'XSRF-TOKEN', 
+                    '_csrf', 
+                    'csrf-token',
+                    'csrftoken'
+                ];
+                
+                for (let name of cookieNames) {
+                    if (cookie.startsWith(`${name}=`)) {
+                        let token = cookie.split('=')[1];
+                        // 对于 XSRF-TOKEN，可能需要解码
+                        if (name === 'XSRF-TOKEN') {
+                            try {
+                                token = decodeURIComponent(token);
+                            } catch (e) {
+                                console.warn('解码 XSRF Token 失败:', e);
+                            }
+                        }
+                        return this.isValidToken(token) ? token : null;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // 验证 Token 是否有效
+        isValidToken(token) {
+            return token && 
+                   token !== '' && 
+                   token !== '{{csrfToken}}' && 
+                   token.length > 10 && // 基本长度验证
+                   !token.includes('{{') && // 确保不是模板占位符
+                   !token.includes('}}');
+        }
+
+        // 获取 Token
+        getToken() {
+            return this.token;
+        }
+
+        // 验证 Token 是否存在
+        isValid() {
+            return this.isValidToken(this.token);
+        }
+
+        // 刷新 Token
+        async refreshToken() {
+            console.log('🔄 尝试刷新 CSRF Token...');
+            this.initialized = false;
+            this.token = null;
+            await this.initialize();
+        }
+
+        // 强制从 API 获取新 Token
+        async forceRefreshToken() {
+            console.log('🔄 强制刷新 CSRF Token...');
+            try {
+                const response = await fetch('/api/csrf-token', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.token = data.data.csrfToken;
+                    this.initialized = true;
+                    console.log('✅ 强制刷新获取到 CSRF Token:', this.token);
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ 强制刷新 CSRF Token 失败:', error);
+            }
+            return false;
+        }
+    }
+
+    // 创建全局 CSRF Token 管理器
+    const csrfManager = new CSRFTokenManager();
+
+    // 密码强度检测
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        const strengthBar = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('passwordStrengthText');
+        
+        if (password.length >= 6) strength++;
+        if (password.length >= 8) strength++;
+        if (/[a-z]/.test(password)) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^a-zA-Z0-9]/.test(password)) strength++;
+        
+        // 更新UI
+        strengthBar.className = 'password-strength';
+        if (password.length === 0) {
+            strengthText.textContent = '密码强度：无';
+        } else if (strength <= 2) {
+            strengthBar.classList.add('weak');
+            strengthText.textContent = '密码强度：弱';
+        } else if (strength <= 4) {
+            strengthBar.classList.add('medium');
+            strengthText.textContent = '密码强度：中';
+        } else {
+            strengthBar.classList.add('strong');
+            strengthText.textContent = '密码强度：强';
+        }
+    }
+    
+    // 表单验证函数
+    function validateForm() {
+        let isValid = true;
+        const username = document.getElementById('username');
+        const email = document.getElementById('email');
+        const company = document.getElementById('company');
+        const phone = document.getElementById('phone');
+        const role = document.getElementById('role');
+        const password = document.getElementById('password');
+        const passwordConfirm = document.getElementById('passwordConfirm');
+        
+        // 重置错误状态
+        document.querySelectorAll('.form-group').forEach(group => {
+            group.classList.remove('error', 'success');
+        });
+        document.getElementById('globalError').classList.remove('show');
+        
+        // 用户名验证
+        if (!username.value.trim()) {
+            username.parentElement.parentElement.classList.add('error');
+            document.getElementById('usernameError').textContent = '用户名不能为空';
+            isValid = false;
+        } else if (username.value.length < 3) {
+            username.parentElement.parentElement.classList.add('error');
+            document.getElementById('usernameError').textContent = '用户名至少需要3位字符';
+            isValid = false;
+        } else {
+            username.parentElement.parentElement.classList.add('success');
+        }
+        
+        // 邮箱验证
+        if (!email.value.trim()) {
+            email.parentElement.parentElement.classList.add('error');
+            document.getElementById('emailError').textContent = '邮箱地址不能为空';
+            isValid = false;
+        } else if (!isValidEmail(email.value)) {
+            email.parentElement.parentElement.classList.add('error');
+            document.getElementById('emailError').textContent = '请输入有效的邮箱地址';
+            isValid = false;
+        } else {
+            email.parentElement.parentElement.classList.add('success');
+        }
+        
+        // 公司名称验证
+        if (!company.value.trim()) {
+            company.parentElement.parentElement.classList.add('error');
+            document.getElementById('companyError').textContent = '公司名称不能为空';
+            isValid = false;
+        } else {
+            company.parentElement.parentElement.classList.add('success');
+        }
+        
+        // 电话验证（可选）
+        if (phone.value.trim() && !isValidPhone(phone.value)) {
+            phone.parentElement.parentElement.classList.add('error');
+            document.getElementById('phoneError').textContent = '请输入有效的11位手机号码';
+            isValid = false;
+        } else if (phone.value.trim()) {
+            phone.parentElement.parentElement.classList.add('success');
+        }
+        
+        // 角色验证
+        if (!role.value) {
+            role.parentElement.parentElement.classList.add('error');
+            document.getElementById('roleError').textContent = '请选择用户角色';
+            isValid = false;
+        } else {
+            role.parentElement.parentElement.classList.add('success');
+        }
+        
+        // 密码验证
+        if (!password.value.trim()) {
+            password.parentElement.parentElement.classList.add('error');
+            document.getElementById('passwordError').textContent = '密码不能为空';
+            isValid = false;
+        } else if (password.value.length < 6) {
+            password.parentElement.parentElement.classList.add('error');
+            document.getElementById('passwordError').textContent = '密码至少需要6位字符';
+            isValid = false;
+        } else {
+            password.parentElement.parentElement.classList.add('success');
+        }
+        
+        // 确认密码验证
+        if (!passwordConfirm.value.trim()) {
+            passwordConfirm.parentElement.parentElement.classList.add('error');
+            document.getElementById('passwordConfirmError').textContent = '请确认密码';
+            isValid = false;
+        } else if (password.value !== passwordConfirm.value) {
+            passwordConfirm.parentElement.parentElement.classList.add('error');
+            document.getElementById('passwordConfirmError').textContent = '两次输入的密码不一致';
+            isValid = false;
+        } else {
+            passwordConfirm.parentElement.parentElement.classList.add('success');
+        }
+        
+        return isValid;
+    }
+    
+    // 邮箱格式验证
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // 手机号格式验证
+    function isValidPhone(phone) {
+        const phoneRegex = /^1[3-9]\d{9}$/;
+        return phoneRegex.test(phone);
+    }
+    
+    // 改进的错误显示函数
+    function showError(message) {
+        const errorElement = document.getElementById('globalError');
+        errorElement.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">⚠️</span>
+                <span>${message}</span>
+            </div>
+        `;
+        errorElement.classList.add('show');
+        
+        // 自动滚动到错误信息
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        setTimeout(() => {
+            errorElement.classList.remove('show');
+        }, 8000);
+    }
+    
+    // 改进的成功显示函数
+    function showSuccess(message) {
+        const successElement = document.getElementById('globalSuccess');
+        successElement.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">✅</span>
+                <span>${message}</span>
+            </div>
+        `;
+        successElement.classList.add('show');
+        
+        setTimeout(() => {
+            successElement.classList.remove('show');
+        }, 5000);
+    }
+    
+    // 设置按钮加载状态
+    function setButtonLoading(loading) {
+        const submitBtn = document.getElementById('submitBtn');
+        if (loading) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<span class="btn-loading-text">注册中...</span>';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.innerHTML = '注册账户';
+        }
+    }
+    
+    // 检查网络连接
+    function checkNetworkStatus() {
+        if (!navigator.onLine) {
+            showError('网络连接已断开，请检查网络连接');
+            return false;
+        }
+        return true;
+    }
+    
+    // 自动登录函数
+    async function handleAutoLogin(email, password) {
+        try {
+            const csrfToken = csrfManager.getToken();
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
+            }
+            
+            console.log('🔄 尝试自动登录...');
+            const loginResponse = await fetch('/auth/login', {
+                method: 'POST',
+                headers: headers,
+                credentials: 'include',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (loginResponse.ok) {
+                const loginResult = await loginResponse.json();
+                
+                if (loginResult.status === 'success') {
+                    // 存储用户信息和token
+                    localStorage.setItem('token', loginResult.token);
+                    localStorage.setItem('user', JSON.stringify(loginResult.data.user));
+                    localStorage.setItem('loginTime', new Date().toISOString());
+                    
+                    console.log('✅ 自动登录成功，用户信息:', loginResult.data.user);
+                    showSuccess('注册成功！正在跳转到仪表盘...');
+                    
+                    // 立即跳转到仪表盘
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                    return true;
+                }
+            }
+            
+            // 如果自动登录失败，跳转到登录页面
+            console.warn('⚠️ 自动登录失败，跳转到登录页面');
+            showSuccess('注册成功！请手动登录');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+            return false;
+            
+        } catch (loginError) {
+            console.error('❌ 自动登录错误:', loginError);
+            showSuccess('注册成功！请手动登录');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+            return false;
+        }
+    }
+    
+    // 实时表单验证
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('password');
+        const passwordConfirmInput = document.getElementById('passwordConfirm');
+        
+        // 密码强度实时检测
+        passwordInput.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+            
+            // 实时验证确认密码
+            if (passwordConfirmInput.value) {
+                if (this.value !== passwordConfirmInput.value) {
+                    passwordConfirmInput.parentElement.parentElement.classList.add('error');
+                } else {
+                    passwordConfirmInput.parentElement.parentElement.classList.remove('error');
+                    passwordConfirmInput.parentElement.parentElement.classList.add('success');
+                }
+            }
+            
+            // 清除错误状态
+            if (this.parentElement.parentElement.classList.contains('error')) {
+                this.parentElement.parentElement.classList.remove('error');
+            }
+        });
+        
+        // 确认密码实时验证
+        passwordConfirmInput.addEventListener('input', function() {
+            if (passwordInput.value !== this.value) {
+                this.parentElement.parentElement.classList.add('error');
+            } else {
+                this.parentElement.parentElement.classList.remove('error');
+                this.parentElement.parentElement.classList.add('success');
+            }
+        });
+        
+        // 其他输入框实时验证
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() && this.parentElement.parentElement.classList.contains('error')) {
+                    this.parentElement.parentElement.classList.remove('error');
+                }
+            });
+            
+            input.addEventListener('input', function() {
+                if (this.parentElement.parentElement.classList.contains('error')) {
+                    this.parentElement.parentElement.classList.remove('error');
+                }
+            });
+        });
+    });
+    
+    // 表单提交处理 - 详细错误信息版本
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!validateForm() || !checkNetworkStatus()) {
+            return;
+        }
+
+        // 确保 CSRF Token 已初始化
+        if (!csrfManager.initialized) {
+            await csrfManager.initialize();
+        }
+
+        // 如果 Token 无效，尝试强制刷新
+        if (!csrfManager.isValid()) {
+            console.warn('⚠️ CSRF Token 无效，尝试强制刷新...');
+            const refreshed = await csrfManager.forceRefreshToken();
+            if (!refreshed || !csrfManager.isValid()) {
+                showError('安全验证失败：无法获取有效的 CSRF Token。请刷新页面重试。');
+                return;
+            }
+        }
+        
+        setButtonLoading(true);
+        
+        const formData = {
+            username: document.getElementById('username').value.trim(),
+            email: document.getElementById('email').value.trim().toLowerCase(),
+            company: document.getElementById('company').value.trim(),
+            phone: document.getElementById('phone').value.trim() || undefined,
+            role: document.getElementById('role').value,
+            password: document.getElementById('password').value,
+            _csrf: csrfManager.getToken()
+        };
+
+        // 清理空值
+        Object.keys(formData).forEach(key => {
+            if (formData[key] === undefined || formData[key] === '') {
+                delete formData[key];
+            }
+        });
+
+        try {
+            const csrfToken = csrfManager.getToken();
+            
+            console.log('✅ 使用的 CSRF Token:', csrfToken);
+            console.log('📤 发送的完整请求体:', JSON.stringify(formData, null, 2));
+            
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
+                headers['X-XSRF-TOKEN'] = csrfToken;
+            }
+            
+            console.log('📤 发送的请求头:', headers);
+            
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: headers,
+                credentials: 'include',
+                body: JSON.stringify(formData)
+            });
+
+            console.log('📥 注册响应状态:', response.status);
+            console.log('📥 响应头:', Object.fromEntries(response.headers.entries()));
+            
+            const responseText = await response.text();
+            console.log('📥 响应内容:', responseText);
+            
+            if (!response.ok) {
+                let errorMessage = '注册失败';
+                let errorDetails = '';
+                
+                // 尝试解析错误信息
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.message || errorMessage;
+                    errorDetails = errorData.errors ? JSON.stringify(errorData.errors) : errorData.details || '';
+                    
+                    // 如果有字段级错误，显示具体错误
+                    if (errorData.errors && Array.isArray(errorData.errors)) {
+                        errorMessage = '数据验证失败：';
+                        errorData.errors.forEach((error, index) => {
+                            errorMessage += `${error.field}(${error.message})`;
+                            if (index < errorData.errors.length - 1) {
+                                errorMessage += '，';
+                            }
+                        });
+                    }
+                } catch {
+                    errorDetails = responseText;
+                }
+                
+                console.error('❌ 注册错误详情:', {
+                    status: response.status,
+                    message: errorMessage,
+                    details: errorDetails,
+                    requestBody: formData
+                });
+                
+                showError(errorMessage);
+                return;
+            }
+
+            // 解析成功响应
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('❌ 解析响应数据失败:', parseError);
+                showError('响应数据格式错误');
+                return;
+            }
+
+            if (data.status === 'success') {
+                showSuccess('注册成功！正在自动登录...');
+                
+                // 直接进行自动登录并跳转
+                const autoLoginSuccess = await handleAutoLogin(formData.email, formData.password);
+                
+                if (!autoLoginSuccess) {
+                    console.log('自动登录流程已完成');
+                }
+            } else {
+                showError(data.message || '注册失败，请重试');
+            }
+        } catch (error) {
+            console.error('❌ 注册请求错误:', error);
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                showError('网络连接失败，请检查网络设置');
+            } else {
+                showError('系统错误，请稍后重试');
+            }
+        } finally {
+            setButtonLoading(false);
+        }
+    });
+
+    // 测试注册函数
+    async function testRegister() {
+        const testData = {
+            username: 'testuser' + Date.now(),
+            email: 'test' + Date.now() + '@example.com',
+            password: '123456',
+            company: '测试公司',
+            role: 'buyer'
+        };
+
+        console.log('🧪 开始测试注册...', testData);
+        
+        try {
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfManager.getToken() || ''
+                },
+                credentials: 'include',
+                body: JSON.stringify(testData)
+            });
+
+            const responseText = await response.text();
+            console.log('🧪 测试响应状态:', response.status);
+            console.log('🧪 测试响应内容:', responseText);
+            
+            if (!response.ok) {
+                console.error('🧪 测试注册失败:', responseText);
+                alert('测试注册失败，请查看控制台');
+            } else {
+                console.log('🧪 测试注册成功:', responseText);
+                alert('测试注册成功！');
+            }
+        } catch (error) {
+            console.error('🧪 测试注册错误:', error);
+            alert('测试注册出错，请查看控制台');
+        }
+    }
+
+    // 页面加载时初始化 CSRF Token
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('🔄 页面加载完成，初始化 CSRF Token...');
+        await csrfManager.initialize();
+        
+        if (csrfManager.isValid()) {
+            console.log('✅ CSRF Token 初始化成功:', csrfManager.getToken());
+        } else {
+            console.warn('⚠️ CSRF Token 初始化失败');
+        }
+
+        // 添加测试按钮到页面
+        const testButton = document.createElement('button');
+        testButton.textContent = '测试注册';
+        testButton.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 12px;
+        `;
+        testButton.onclick = testRegister;
+        document.body.appendChild(testButton);
+    });
+
+    // 提供调试功能
+    window.debugCSRF = () => {
+        console.log('=== CSRF 调试信息 ===');
+        console.log('CSRF Token:', csrfManager.getToken());
+        console.log('Initialized:', csrfManager.initialized);
+        console.log('Is Valid:', csrfManager.isValid());
+        console.log('Hidden Field:', document.querySelector('input[name="_csrf"]')?.value);
+        console.log('Meta Tag:', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'));
+        console.log('Cookies:', document.cookie);
+        console.log('=== 结束调试 ===');
+    };
+    </script>
+</body>
+</html>
